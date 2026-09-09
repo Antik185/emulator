@@ -1,0 +1,16 @@
+**/bin/
+**/obj/
+release/*.pdb
+release/
+release-latest/
+release-ui-fix/
+portable-win-x64/
+portable-updates-win-x64/
+publish/
+profiles.json
+settings.json
+BrowserData/
+Backups/
+Updates/
+*.user
+*.suo

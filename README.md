@@ -69,4 +69,3 @@ dotnet run --project .\SpacesBrowser.SmokeTests\SpacesBrowser.SmokeTests.csproj
 ```
 
 Пользовательские данные сохраняются в `%LOCALAPPDATA%\SpacesBrowser`. Приложение не меняет IP, геолокацию или поведение пользователя и не обещает, что сторонние сервисы будут считать пространства разными физическими устройствами.
-

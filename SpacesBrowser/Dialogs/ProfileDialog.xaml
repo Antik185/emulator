@@ -1,0 +1,106 @@
+<Window x:Class="SpacesBrowser.Dialogs.ProfileDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Пространство"
+        Width="560" Height="720"
+        MinWidth="520" MinHeight="680"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="{StaticResource WindowBackground}"
+        Foreground="{StaticResource TextPrimary}"
+        FontFamily="Segoe UI">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="HeadingText"
+                   FontSize="26" FontWeight="SemiBold"
+                   Text="Новое пространство" />
+        <TextBlock Grid.Row="1" Margin="0,8,0,22"
+                   Foreground="{StaticResource TextSecondary}"
+                   TextWrapping="Wrap"
+                   Text="Данные этого профиля будут храниться отдельно от остальных." />
+
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,6,14">
+                <TextBlock Margin="0,0,0,7" Foreground="{StaticResource TextSecondary}" Text="Название" />
+                <TextBox x:Name="NameBox" MaxLength="48" />
+
+                <TextBlock Margin="0,18,0,7" Foreground="{StaticResource TextSecondary}" Text="Стартовая страница" />
+                <TextBox x:Name="HomeUrlBox" />
+
+                <Grid Margin="0,18,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,7" Foreground="{StaticResource TextSecondary}" Text="Доступно в профиле" />
+                        <ComboBox x:Name="CapabilityBox" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Margin="0,0,0,7" Foreground="{StaticResource TextSecondary}" Text="Регион и timezone" />
+                        <ComboBox x:Name="RegionBox" MaxDropDownHeight="230" SelectionChanged="RegionBox_SelectionChanged" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid Margin="0,18,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="18" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Margin="0,0,0,7" Foreground="{StaticResource TextSecondary}" Text="Язык браузера" />
+                        <ComboBox x:Name="LanguageBox" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Margin="0,0,0,7" Foreground="{StaticResource TextSecondary}" Text="Размер окна" />
+                        <ComboBox x:Name="WindowPresetBox" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Margin="0,18,0,7" Foreground="{StaticResource TextSecondary}"
+                           Text="Готов через" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="ReadyDaysBox" Width="64" MaxLength="4"
+                             HorizontalContentAlignment="Center" />
+                    <TextBlock Margin="8,0,18,0" VerticalAlignment="Center"
+                               Foreground="{StaticResource TextSecondary}" Text="дней" />
+                    <TextBox x:Name="ReadyHoursBox" Width="64" MaxLength="2"
+                             HorizontalContentAlignment="Center" />
+                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center"
+                               Foreground="{StaticResource TextSecondary}" Text="часов" />
+                </StackPanel>
+                <TextBlock Margin="0,6,0,0" Foreground="#77839A" FontSize="12"
+                           Text="Срок отсчитывается от даты создания. 0 дней и 0 часов — сразу READY." />
+
+                <TextBlock Margin="0,18,0,9" Foreground="{StaticResource TextSecondary}" Text="Цвет" />
+                <WrapPanel x:Name="ColorPanel" />
+
+                <Border Margin="0,20,0,0" Padding="14" CornerRadius="11"
+                        Background="#10141C" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <TextBlock FontWeight="SemiBold" Text="Приватность Brave" />
+                        <TextBlock Margin="0,6,0,0" Foreground="{StaticResource TextSecondary}"
+                                   TextWrapping="Wrap"
+                                   Text="Canvas, WebGL и WebAudio защищает сам Brave. Timezone автоматически выбирается вместе с регионом и применяется локальным контроллером к вкладкам этого пространства." />
+                        <TextBlock x:Name="SystemTimezoneText" Margin="0,7,0,0" Foreground="#77839A" FontSize="12" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock x:Name="ValidationText" Margin="0,14,0,0" Foreground="{StaticResource Danger}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Style="{StaticResource RoundedButton}" Margin="0,0,10,0" Click="Cancel_Click">Отмена</Button>
+            <Button Style="{StaticResource PrimaryButton}" Click="Save_Click">Сохранить</Button>
+        </StackPanel>
+    </Grid>
+</Window>

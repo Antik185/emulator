@@ -1,0 +1,49 @@
+name: Build and publish Spaces
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SpacesBrowser/**'
+      - 'SpacesBrowser.SmokeTests/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: spaces-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+      - name: Check updater and data preservation
+        run: dotnet run --project SpacesBrowser.SmokeTests -c Release -- --updates-only
+      - name: Build standalone Windows x64 EXE
+        run: dotnet publish SpacesBrowser -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o publish
+      - name: Publish a new version
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [xml]$project = Get-Content SpacesBrowser/SpacesBrowser.csproj
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Invalid version' }
+          $tag = "v$version"
+          gh release view $tag --repo $env:GH_REPO
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host 'Version already published; increase Version in SpacesBrowser.csproj for a new update.'
+            exit 0
+          }
+          gh release create $tag publish/Spaces.exe --repo $env:GH_REPO --target $env:RELEASE_COMMIT --title "Spaces $version" --notes "Portable Windows x64. Updates preserve local profiles and settings." --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
