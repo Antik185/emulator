@@ -11,6 +11,8 @@ var testRoot = Path.Combine(Path.GetTempPath(), "SpacesBrowserSmoke", Guid.NewGu
 try
 {
     Directory.CreateDirectory(testRoot);
+    ProfileFeatureTests.Run(testRoot);
+    ProfileUiSmokeTests.Run(args.FirstOrDefault(arg => arg.StartsWith("--ui-output="))?[12..]);
     await UpdateSmokeTests.RunAsync(testRoot);
     if (args.Contains("--verify-update-feed"))
     {
@@ -366,4 +368,3 @@ sealed class BinaryStubHttpMessageHandler : HttpMessageHandler
         });
     }
 }
-

@@ -28,7 +28,18 @@
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0,0,6,14">
                 <TextBlock Margin="0,0,0,7" Foreground="{StaticResource TextSecondary}" Text="Название" />
+                <StackPanel x:Name="NameOptions" Orientation="Horizontal" Margin="0,0,0,9">
+                    <ComboBox x:Name="NamePresetBox" Width="140" SelectionChanged="NamePreset_Changed" />
+                    <CheckBox x:Name="CustomNameBox" Margin="16,0,0,0" Content="Своё имя (кастом)"
+                              Checked="CustomName_Changed" Unchecked="CustomName_Changed" />
+                </StackPanel>
                 <TextBox x:Name="NameBox" MaxLength="48" />
+                <TextBlock x:Name="NameHint" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap"
+                           Foreground="{StaticResource TextSecondary}" Text="Номер подставляется автоматически и учитывает архив." />
+
+                <TextBlock Margin="0,18,0,7" Foreground="{StaticResource TextSecondary}" Text="Комментарий (необязательно)" />
+                <TextBox x:Name="CommentBox" MaxLength="200" Height="70" TextWrapping="Wrap"
+                         AcceptsReturn="True" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />
 
                 <TextBlock Margin="0,18,0,7" Foreground="{StaticResource TextSecondary}" Text="Стартовая страница" />
                 <TextBox x:Name="HomeUrlBox" />
@@ -77,7 +88,7 @@
                     <TextBlock Margin="8,0,0,0" VerticalAlignment="Center"
                                Foreground="{StaticResource TextSecondary}" Text="часов" />
                 </StackPanel>
-                <TextBlock Margin="0,6,0,0" Foreground="#77839A" FontSize="12"
+                <TextBlock Margin="0,6,0,0" Foreground="#77839A" FontSize="12" TextWrapping="Wrap"
                            Text="Срок отсчитывается от даты создания. 0 дней и 0 часов — сразу READY." />
 
                 <TextBlock Margin="0,18,0,9" Foreground="{StaticResource TextSecondary}" Text="Цвет" />

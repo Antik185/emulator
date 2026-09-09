@@ -4,6 +4,7 @@ public sealed class BrowserProfile
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = "Новое пространство";
+    public string Comment { get; set; } = string.Empty;
     public string Color { get; set; } = "#7C6CFF";
     public string HomeUrl { get; set; } = "https://ya.ru/";
     public string BrowserLanguage { get; set; } = "ru-RU";

@@ -30,6 +30,14 @@ public partial class MainWindow : Window
     private readonly SemaphoreSlim _ipRefreshGate = new(1, 1);
     private bool _braveInstallInProgress;
     private int _pendingLaunches;
+    private string? _selectedFolder;
+    private static readonly (string Key, string Title, string Color, string Hint)[] Folders =
+    {
+        ("Both", "Рестораны + магазины", "#58E0B5", "Доступно и то, и другое"),
+        ("Restaurant", "Рестораны", "#6EAEFF", "Все с доступом к ресторанам"),
+        ("Store", "Магазины", "#FFBC57", "Все с доступом к магазинам"),
+        ("Archive", "Архив", "#A69ABB", "Архивные пространства")
+    };
 
     public MainWindow()
     {
@@ -49,6 +57,7 @@ public partial class MainWindow : Window
         {
             _settings = _settingsStore.Load();
             _profiles = _profileStore.Load().ToList();
+            if (ProfileNaming.Observe(_settings, _profiles)) _settingsStore.Save(_settings);
             var migratedRegion = false;
             foreach (var profile in _profiles)
             {
@@ -164,36 +173,47 @@ public partial class MainWindow : Window
     private void RefreshCards()
     {
         ActiveProfilesPanel.Children.Clear();
-        ArchivedProfilesPanel.Children.Clear();
-
-        var capabilityFilter = (CapabilityFilterBox.SelectedItem as ComboBoxItem)?.Tag as string ?? "All";
-        var filtered = _profiles
-            .Where(profile => MatchesCapability(profile, capabilityFilter))
-            .OrderBy(profile => profile.Name, StringComparer.CurrentCultureIgnoreCase)
-            .ToList();
-
-        foreach (var profile in filtered.Where(profile => !profile.IsArchived))
+        FoldersPanel.Children.Clear();
+        var inFolder = _selectedFolder is not null;
+        BackToFoldersButton.Visibility = inFolder ? Visibility.Visible : Visibility.Collapsed;
+        FoldersPanel.Visibility = inFolder ? Visibility.Collapsed : Visibility.Visible;
+        ActiveProfilesPanel.Visibility = inFolder ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Visibility = Visibility.Collapsed;
+        if (_selectedFolder is not null)
         {
-            ActiveProfilesPanel.Children.Add(CreateProfileCard(profile));
+            var filtered = ProfileFolders.Select(_profiles, _selectedFolder).ToList();
+            ActiveHeading.Text = (_selectedFolder == "All" ? "Все пространства" : Folders.First(f => f.Key == _selectedFolder).Title)
+                                 + $" · {filtered.Count}";
+            foreach (var profile in filtered) ActiveProfilesPanel.Children.Add(CreateProfileCard(profile));
+            EmptyState.Visibility = filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
-
-        var showArchived = ShowArchivedBox.IsChecked == true;
-        ArchivedHeading.Visibility = showArchived ? Visibility.Visible : Visibility.Collapsed;
-        ArchivedProfilesPanel.Visibility = showArchived ? Visibility.Visible : Visibility.Collapsed;
-        if (showArchived)
+        else
         {
-            foreach (var profile in filtered.Where(profile => profile.IsArchived))
+            ActiveHeading.Text = "Папки";
+            foreach (var folder in Folders)
             {
-                ArchivedProfilesPanel.Children.Add(CreateProfileCard(profile));
+                var content = new StackPanel { Width = 258 };
+                var iconFill = Brush(folder.Color);
+                iconFill.Opacity = 0.14;
+                content.Children.Add(new System.Windows.Shapes.Path
+                {
+                    Data = Geometry.Parse("M 2,8 L 2,4 Q 2,2 4,2 L 13,2 L 17,6 L 32,6 Q 34,6 34,8 L 34,26 Q 34,28 32,28 L 4,28 Q 2,28 2,26 Z M 2,10 L 34,10"),
+                    Width = 36, Height = 30, Stretch = Stretch.Uniform, StrokeThickness = 1.6,
+                    Stroke = Brush(folder.Color), Fill = iconFill, HorizontalAlignment = HorizontalAlignment.Left,
+                    Margin = new Thickness(0, 0, 0, 13)
+                });
+                content.Children.Add(new TextBlock { Text = folder.Title, FontSize = 17, FontWeight = FontWeights.SemiBold });
+                content.Children.Add(new TextBlock { Text = folder.Hint, FontSize = 12,
+                    Foreground = Brush("#9DA7BA"), Margin = new Thickness(0, 6, 0, 0) });
+                content.Children.Add(new TextBlock { Text = $"Пространств: {_profiles.Count(p => ProfileFolders.Contains(p, folder.Key))}",
+                    Foreground = Brush(folder.Color), Margin = new Thickness(0, 12, 0, 0) });
+                var button = new Button { Content = content, Tag = folder.Key, Width = 300, Height = 174,
+                    Margin = new Thickness(0, 0, 14, 14), Padding = new Thickness(20),
+                    HorizontalContentAlignment = HorizontalAlignment.Left, Style = (Style)FindResource("RoundedButton") };
+                button.Click += Folder_Click;
+                FoldersPanel.Children.Add(button);
             }
         }
-
-        var visibleCount = filtered.Count(profile => !profile.IsArchived)
-                           + (showArchived ? filtered.Count(profile => profile.IsArchived) : 0);
-        EmptyState.Visibility = visibleCount == 0 ? Visibility.Visible : Visibility.Collapsed;
-        ActiveHeading.Visibility = filtered.Any(profile => !profile.IsArchived)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
         FooterStatus.Text = $"{_profiles.Count(profile => !profile.IsArchived)} активных · {_profiles.Count(profile => profile.IsArchived)} в архиве";
     }
 
@@ -210,7 +230,7 @@ public partial class MainWindow : Window
         var card = new Border
         {
             Width = 340,
-            Height = 305,
+            Height = 365,
             Margin = new Thickness(0, 0, 14, 14),
             Padding = new Thickness(19),
             CornerRadius = new CornerRadius(16),
@@ -331,6 +351,16 @@ public partial class MainWindow : Window
             Foreground = Brush("#7F8BA0"),
             FontSize = 12
         });
+        if (!string.IsNullOrWhiteSpace(profile.Comment))
+        {
+            details.Children.Add(new TextBlock
+            {
+                Text = profile.Comment, ToolTip = profile.Comment,
+                Margin = new Thickness(0, 10, 0, 8), FontSize = 13,
+                Foreground = Brush("#C5CDDC"), TextWrapping = TextWrapping.Wrap,
+                TextTrimming = TextTrimming.CharacterEllipsis, MaxHeight = 38
+            });
+        }
         root.Children.Add(details);
 
         var openButton = new Button
@@ -401,17 +431,6 @@ public partial class MainWindow : Window
         return string.Concat(words.Take(2).Select(word => char.ToUpper(word[0])));
     }
 
-    private static bool MatchesCapability(BrowserProfile profile, string filter)
-    {
-        return filter switch
-        {
-            "Restaurant" => profile.Capability is "Restaurant" or "Both",
-            "Store" => profile.Capability is "Store" or "Both",
-            "Both" => profile.Capability == "Both",
-            _ => true
-        };
-    }
-
     private static string EnvironmentLabel(BrowserProfile profile)
     {
         var window = profile.WindowPreset switch
@@ -427,11 +446,15 @@ public partial class MainWindow : Window
 
     private void CreateProfile_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new ProfileDialog { Owner = this };
+        ProfileNaming.Observe(_settings, _profiles);
+        var dialog = new ProfileDialog(nextSpaceName: ProfileNaming.NextName(_settings, "Space"),
+            nextLehaName: ProfileNaming.NextName(_settings, "Leha")) { Owner = this };
         if (dialog.ShowDialog() == true && dialog.Result is not null)
         {
             _profiles.Add(dialog.Result);
+            _selectedFolder = "All";
             SaveAndRefresh("Пространство создано.");
+            ProfilesScroll.ScrollToTop();
         }
     }
 
@@ -657,24 +680,25 @@ public partial class MainWindow : Window
         return null;
     }
 
-    private void ShowArchived_Changed(object sender, RoutedEventArgs e)
+    private void Folder_Click(object sender, RoutedEventArgs e)
     {
-        if (IsLoaded)
-        {
-            RefreshCards();
-        }
+        if (sender is FrameworkElement { Tag: string folder }) NavigateToFolder(folder);
     }
 
-    private void CapabilityFilter_Changed(object sender, SelectionChangedEventArgs e)
+    private void BackToFolders_Click(object sender, RoutedEventArgs e) => NavigateToFolder(null);
+
+    private void AllProfiles_Click(object sender, RoutedEventArgs e) => NavigateToFolder("All");
+
+    private void NavigateToFolder(string? folder)
     {
-        if (IsLoaded)
-        {
-            RefreshCards();
-        }
+        _selectedFolder = folder;
+        RefreshCards();
+        ProfilesScroll.ScrollToTop();
     }
 
     private void SaveAndRefresh(string status)
     {
+        if (ProfileNaming.Observe(_settings, _profiles)) _settingsStore.Save(_settings);
         _profileStore.Save(_profiles);
         RefreshCards();
         FooterStatus.Text = status;

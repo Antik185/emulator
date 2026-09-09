@@ -98,39 +98,30 @@
                     <TextBlock Text="Новое пространство" />
                 </StackPanel>
             </Button>
-            <ComboBox Grid.Column="2" x:Name="CapabilityFilterBox" Width="132" Height="34"
-                      Margin="0,0,14,0" FontSize="13"
-                      SelectedIndex="0" SelectionChanged="CapabilityFilter_Changed">
-                <ComboBoxItem Tag="All">Все типы</ComboBoxItem>
-                <ComboBoxItem Tag="Restaurant">Ресторан</ComboBoxItem>
-                <ComboBoxItem Tag="Store">Магазин</ComboBoxItem>
-                <ComboBoxItem Tag="Both">Только оба</ComboBoxItem>
-            </ComboBox>
-            <CheckBox Grid.Column="3" x:Name="ShowArchivedBox"
-                      Content="Показывать архив" Checked="ShowArchived_Changed" Unchecked="ShowArchived_Changed" />
+            <Button Grid.Column="2" x:Name="BackToFoldersButton" Margin="0,0,10,0" Padding="13,8"
+                    Style="{StaticResource RoundedButton}" Click="BackToFolders_Click" Content="← Папки" />
+            <Button Grid.Column="3" Padding="13,8" Style="{StaticResource RoundedButton}"
+                    Click="AllProfiles_Click" Content="Все пространства" />
         </Grid>
 
-        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="3" x:Name="ProfilesScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="34,6,20,24">
+                <TextBlock x:Name="ActiveHeading" Margin="2,0,0,13" FontSize="16" FontWeight="SemiBold" Text="Папки" />
+                <WrapPanel x:Name="FoldersPanel" />
                 <Border x:Name="EmptyState" Visibility="Collapsed"
                         Padding="38" Margin="0,8,14,0" CornerRadius="16"
                         Background="{StaticResource Surface}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1">
                     <StackPanel HorizontalAlignment="Center">
                         <TextBlock HorizontalAlignment="Center" FontSize="38" Foreground="{StaticResource Primary}" Text="◎" />
-                        <TextBlock HorizontalAlignment="Center" Margin="0,12,0,0"
-                                   FontSize="19" FontWeight="SemiBold" Text="Создайте первое пространство" />
+                        <TextBlock x:Name="EmptyTitle" HorizontalAlignment="Center" Margin="0,12,0,0"
+                                   FontSize="19" FontWeight="SemiBold" Text="В этой папке пока пусто" />
                         <TextBlock HorizontalAlignment="Center" Margin="0,7,0,0"
                                    Foreground="{StaticResource TextSecondary}"
-                                   Text="Cookie, история и локальные данные будут храниться отдельно." />
+                                   Text="Выберите другую папку или создайте новое пространство." />
                     </StackPanel>
                 </Border>
 
-                <TextBlock x:Name="ActiveHeading" Margin="2,0,0,13" FontSize="16" FontWeight="SemiBold" Text="Активные" />
                 <WrapPanel x:Name="ActiveProfilesPanel" />
-
-                <TextBlock x:Name="ArchivedHeading" Visibility="Collapsed"
-                           Margin="2,24,0,13" FontSize="16" FontWeight="SemiBold" Text="Архив" />
-                <WrapPanel x:Name="ArchivedProfilesPanel" />
             </StackPanel>
         </ScrollViewer>
 
