@@ -12,6 +12,16 @@ try
 {
     Directory.CreateDirectory(testRoot);
     await UpdateSmokeTests.RunAsync(testRoot);
+    if (args.Contains("--verify-update-feed"))
+    {
+        var updater = new GitHubUpdateService(GitHubUpdateService.Repository);
+        var release = await updater.CheckAsync(new Version(0, 0, 0, 0))
+            ?? throw new Exception("No published update available");
+        var downloadedUpdate = await updater.DownloadAsync(release, Path.Combine(testRoot, "github-release"));
+        Assert(Version.Parse(FileVersionInfo.GetVersionInfo(downloadedUpdate).FileVersion!) == release.Version,
+            "Published EXE version differs from GitHub release");
+        Console.WriteLine($"PASS: live GitHub update feed, downloaded SHA-256, EXE version {release.Version}");
+    }
     if (args.Contains("--updates-only")) return 0;
     var paths = new AppPaths(testRoot);
     var store = new ProfileStore(paths);
@@ -356,3 +366,4 @@ sealed class BinaryStubHttpMessageHandler : HttpMessageHandler
         });
     }
 }
+
