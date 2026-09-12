@@ -91,6 +91,7 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Button Style="{StaticResource PrimaryButton}" Click="CreateProfile_Click">
                 <StackPanel Orientation="Horizontal">
@@ -98,9 +99,23 @@
                     <TextBlock Text="Новое пространство" />
                 </StackPanel>
             </Button>
-            <Button Grid.Column="2" x:Name="BackToFoldersButton" Margin="0,0,10,0" Padding="13,8"
+            <Grid Grid.Column="2" Width="230" Height="38" Margin="0,0,10,0">
+                <Border CornerRadius="10" Background="{StaticResource Surface}"
+                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" />
+                <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" FontFamily="Segoe MDL2 Assets"
+                           FontSize="14" Foreground="{StaticResource TextSecondary}" Text="&#xE721;" />
+                <TextBlock x:Name="SearchHint" Margin="36,0,30,0" VerticalAlignment="Center"
+                           Foreground="#77839A" IsHitTestVisible="False" Text="Найти пространство" />
+                <TextBox x:Name="SearchBox" Margin="32,1,31,1" Padding="5,0" VerticalContentAlignment="Center"
+                         Background="Transparent" BorderThickness="0" TextChanged="Search_Changed" />
+                <Button x:Name="SearchClearButton" Width="28" Height="28" Margin="0,0,5,0"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0"
+                        Visibility="Collapsed" Style="{StaticResource RoundedButton}"
+                        FontSize="15" Content="×" ToolTip="Очистить поиск" Click="SearchClear_Click" />
+            </Grid>
+            <Button Grid.Column="3" x:Name="BackToFoldersButton" Margin="0,0,10,0" Padding="13,8"
                     Style="{StaticResource RoundedButton}" Click="BackToFolders_Click" Content="← Папки" />
-            <Button Grid.Column="3" Padding="13,8" Style="{StaticResource RoundedButton}"
+            <Button Grid.Column="4" Padding="13,8" Style="{StaticResource RoundedButton}"
                     Click="AllProfiles_Click" Content="Все пространства" />
         </Grid>
 

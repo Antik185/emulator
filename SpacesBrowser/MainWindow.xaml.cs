@@ -174,14 +174,27 @@ public partial class MainWindow : Window
     {
         ActiveProfilesPanel.Children.Clear();
         FoldersPanel.Children.Clear();
-        var inFolder = _selectedFolder is not null;
+        var query = SearchBox.Text.Trim();
+        var isSearching = query.Length > 0;
+        var inFolder = _selectedFolder is not null || isSearching;
+        SearchHint.Visibility = isSearching ? Visibility.Collapsed : Visibility.Visible;
+        SearchClearButton.Visibility = isSearching ? Visibility.Visible : Visibility.Collapsed;
         BackToFoldersButton.Visibility = inFolder ? Visibility.Visible : Visibility.Collapsed;
         FoldersPanel.Visibility = inFolder ? Visibility.Collapsed : Visibility.Visible;
         ActiveProfilesPanel.Visibility = inFolder ? Visibility.Visible : Visibility.Collapsed;
         EmptyState.Visibility = Visibility.Collapsed;
-        if (_selectedFolder is not null)
+        if (isSearching)
+        {
+            var filtered = ProfileSearch.Select(_profiles, query).ToList();
+            ActiveHeading.Text = $"Результаты поиска · {filtered.Count}";
+            EmptyTitle.Text = "Ничего не найдено";
+            foreach (var profile in filtered) ActiveProfilesPanel.Children.Add(CreateProfileCard(profile));
+            EmptyState.Visibility = filtered.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else if (_selectedFolder is not null)
         {
             var filtered = ProfileFolders.Select(_profiles, _selectedFolder).ToList();
+            EmptyTitle.Text = "В этой папке пока пусто";
             ActiveHeading.Text = (_selectedFolder == "All" ? "Все пространства" : Folders.First(f => f.Key == _selectedFolder).Title)
                                  + $" · {filtered.Count}";
             foreach (var profile in filtered) ActiveProfilesPanel.Children.Add(CreateProfileCard(profile));
@@ -189,6 +202,7 @@ public partial class MainWindow : Window
         }
         else
         {
+            EmptyTitle.Text = "В этой папке пока пусто";
             ActiveHeading.Text = "Папки";
             foreach (var folder in Folders)
             {
@@ -453,6 +467,7 @@ public partial class MainWindow : Window
         {
             _profiles.Add(dialog.Result);
             _selectedFolder = "All";
+            SearchBox.Clear();
             SaveAndRefresh("Пространство создано.");
             ProfilesScroll.ScrollToTop();
         }
@@ -685,6 +700,20 @@ public partial class MainWindow : Window
         if (sender is FrameworkElement { Tag: string folder }) NavigateToFolder(folder);
     }
 
+    private void Search_Changed(object sender, TextChangedEventArgs e)
+    {
+        if (SearchHint is null || SearchClearButton is null) return;
+        SearchHint.Visibility = string.IsNullOrWhiteSpace(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+        SearchClearButton.Visibility = SearchHint.Visibility == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
+        if (IsLoaded) RefreshCards();
+    }
+
+    private void SearchClear_Click(object sender, RoutedEventArgs e)
+    {
+        SearchBox.Clear();
+        SearchBox.Focus();
+    }
+
     private void BackToFolders_Click(object sender, RoutedEventArgs e) => NavigateToFolder(null);
 
     private void AllProfiles_Click(object sender, RoutedEventArgs e) => NavigateToFolder("All");
@@ -692,6 +721,7 @@ public partial class MainWindow : Window
     private void NavigateToFolder(string? folder)
     {
         _selectedFolder = folder;
+        SearchBox.Clear();
         RefreshCards();
         ProfilesScroll.ScrollToTop();
     }

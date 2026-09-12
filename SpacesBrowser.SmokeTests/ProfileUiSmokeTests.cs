@@ -72,6 +72,20 @@ static class ProfileUiSmokeTests
                 Require(cards.Children.Count == 1, "Archive view");
                 Invoke(main, "NavigateToFolder", new object?[] { null });
                 Require(((WrapPanel)main.FindName("FoldersPanel")).Visibility == Visibility.Visible, "Return to folders");
+                var search = (TextBox)main.FindName("SearchBox");
+                search.Text = "заметка 203.0.113.42";
+                Invoke(main, "RefreshCards");
+                Require(cards.Children.Count == 1, "Global multi-keyword search");
+                Require(((TextBlock)main.FindName("ActiveHeading")).Text == "Результаты поиска · 1", "Search result heading");
+                Require(((Button)main.FindName("SearchClearButton")).Visibility == Visibility.Visible, "Clear search button");
+                Render(main, 1120, 720, outputDirectory, "search");
+                search.Text = "несуществующее";
+                Invoke(main, "RefreshCards");
+                Require(cards.Children.Count == 0 && ((Border)main.FindName("EmptyState")).Visibility == Visibility.Visible,
+                    "Empty search state");
+                search.Clear();
+                Invoke(main, "RefreshCards");
+                Require(((WrapPanel)main.FindName("FoldersPanel")).Visibility == Visibility.Visible, "Clearing search restores folders");
                 main.Close();
                 edit.Close();
                 dialog.Close();

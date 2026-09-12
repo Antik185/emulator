@@ -58,7 +58,16 @@ static class ProfileFeatureTests
         var sameTime = new BrowserProfile { CreatedAtUtc = now };
         profiles.Add(sameTime);
         Require(ProfileFolders.Select(profiles, "All").First() == sameTime, "Newest insertion wins timestamp ties");
-        Console.WriteLine("PASS: standard names, legacy numbering, persistent counters, comments, folders, newest-first sorting");
+        restaurant.Comment = "Важный утренний заказ";
+        restaurant.Region = "Калининград";
+        restaurant.LastPublicIp = "203.0.113.77";
+        Require(ProfileSearch.Select(profiles, "утренний").Single() == restaurant, "Search comment keywords");
+        Require(ProfileSearch.Select(profiles, "утренний Калинин").Single() == restaurant, "All search words must match");
+        Require(ProfileSearch.Select(profiles, "203.0.113.77").Single() == restaurant, "Search last IP");
+        Require(ProfileSearch.Select(profiles, "магазин").Contains(shop), "Search localized profile type");
+        Require(ProfileSearch.Select(profiles, "архив").Single() == archive, "Search includes archive with keyword");
+        Require(!ProfileSearch.Select(profiles, "нет такого").Any(), "Empty search result");
+        Console.WriteLine("PASS: standard names, comments, folders, newest-first sorting and keyword search");
     }
 
     private static void Require(bool value, string message)
